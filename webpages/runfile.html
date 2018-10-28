@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+     <!--Include eel.js - note this file doesn't exist in the 'web' directory -->
+    <script type="text/javascript" src="eel.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+            <script type="text/javascript">
+                num_questions = 0;
+        $(function(){
+
+                    // eel.expose(say_hello_js);               // Expose this function to Python
+
+                    function get_incorrect_answers(){
+                        incorrect_answers = [];
+                        len = $("#answers > input").length;
+                        for (j = 0; j < len; j++) {
+                            incorrect_answers.push($("#antwoord_fout_"+j).val())
+                        }
+                        return incorrect_answers
+                    }
+
+
+
+                    function wipe_question() {
+                        $('#answers').empty();
+                        $("#opgave_titel").val("");
+                        $("#opgave_text").val("");
+                        $("#antwoord_correct_text").val("");
+                    }
+
+                    function answers_non_empty(incorrect_answers) {
+
+                        if (incorrect_answers.length < 1 ) {
+                            return false
+                        }
+                        for (j = 0; j < incorrect_answers.length; j++) {
+                            if (incorrect_answers[j] == ''){
+                                return false
+                            }
+                        }
+                        return true
+                    }
+
+                    $("#export_module").click(function(){
+
+                    //    check if the questions fields are empty
+                        if ($("#opgave_titel").val() != '' && $("#opgave_text").val()  != ''  &&  $("#antwoord_correct_text").val() != '' && answers_non_empty(incorrect_answers)) {
+                            submit_answers()
+                        }
+
+                        if ($("#assign_selector").is(':checked') ) {
+                            if ($("#assignment_name").val() == '' ) {
+                                alert('assignment name required')
+                                return false
+                            } else {
+                                output = {
+                                    state: "MODULE_ASSIGNMENT",
+                                    module_name: $("#module_naam").val(),
+                                    assignment_name: $("#assignment_name").val()
+                                }
+                            }
+
+                        } else {
+                            output = {
+                                state: "MODULE",
+                                module_name:  $("#module_naam").val(),
+                            }
+                        }
+
+                        eel.handleinput(output)
+
+                    });
+
+                    function submit_answers(){
+                        output = {
+                                title: $("#opgave_titel").val(),
+                                tekst: $("#opgave_text").val(),
+                                antwoord_correct: $("#antwoord_correct_text").val(),
+                                antwoord_incorrect: incorrect_answers
+                            };
+
+                            eel.handleinput(output);
+                            // $('#inp').val('');
+                            // say_hello_js($("#inp").val())
+                            wipe_question();
+                            num_questions = num_questions + 1;
+                            $("#counter_shower").text("Questions in module: " + num_questions);
+                    }
+
+                    $("#btn").click(function(){
+
+                        incorrect_answers =  get_incorrect_answers()
+
+
+                        if ($("#opgave_titel").val() != '' && $("#opgave_text").val()  != ''  &&  $("#antwoord_correct_text").val() != '' && answers_non_empty(incorrect_answers)) {
+                            submit_answers()
+                        } else {
+                            alert("You left one or more equired fields left empty...")
+                        }
+                    });
+
+                    $("#selector").mouseleave(function(){
+
+                        entries =  get_incorrect_answers();
+                        // len = $("#answers > input").length;
+                        // for (j = 0; j < len; j++) {
+                        //     entries.push($("#antwoord_fout_"+j).val())
+                        // }
+                        $('#answers').empty();
+                        console.log(entries);
+                        // console.log($("#selector").val());
+                        for (i = 0; i < $("#selector").val(); i++) {
+                            // console.log("fout" + (i));
+                            input_item = $("<input type='text' style='width: 96%;margin: 2px;' id='antwoord_fout_"+i+"' placeholder='Incorrect answer"+i+"'>");
+                            $('#answers').append(input_item);
+                             $("#antwoord_fout_"+i).val(entries[i]);
+                        }
+
+                    });
+
+                    $("#assign_selector").click(function(){
+                            if ($("#assign_selector").is(':checked') ) {
+                                $("#head_houder").append('<input type="text" id="assignment_name" placeholder="assignment name" style="margin-left: 5px; width: 280px;">')
+                            } else {
+                                $("#assignment_name").remove()
+                            }
+
+                    })
+        });
+        </script>
+</head>
+<body>
+    <body>
+    <div style="padding-left: 10px">
+        <h1>Multiple-choice, single correct answer</h1>
+        <input type='text' id='module_naam' placeholder='Module name' style="width:500px">
+</div>
+    <div style="padding-left: 10px" >
+        <p id="counter_shower"></p>
+    </div>
+
+        <div id="head_houder" style="margin-left: 10px; margin-top: 10px;margin-bottom: 20px">
+        <input type='button' id='export_module' class='btn btn-primary btn-danger' value='Generate Module'>
+        <input type="checkbox" name="incl_assignment" value="assignment" id="assign_selector"> Include assignment
+             </div>
+
+        <div style="height:600px; padding-top:20px; padding-left:10px; padding-right:5px;">
+            <p> Title:
+            <input type='text' id='opgave_titel' placeholder='Question Title' style="width:500px">
+                </p>
+            <div> Question text: </br>
+                <textarea rows="10" cols="80" id='opgave_text' placeholder='Question text'></textarea>
+            <!--<input type='textarea' id='opgave_text' placeholder='Question text' style="width: 80%; height: 200px">-->
+                </div>
+             <p> Correct answer:
+            <input type='text' id='antwoord_correct_text' placeholder='Write anything' style="width:500px">
+                </p>
+
+            Number of incorrect answers:
+            <select id="selector" style="padding-bottom: 20px">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+            </select>
+
+            <div id="answers">
+
+            </div>
+            <input type='button' id='btn' class='btn btn-primary' value='Append Question' style="margin-top:20px">
+        </div>
+
+    </body>
+
+
+</body>
+</html>

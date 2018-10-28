@@ -1,5 +1,5 @@
 from lxml import etree
-from ta_xml import *
+from interfaces.XML_interface import *
 
 class ta_module:
     
@@ -22,8 +22,11 @@ class ta_module:
         # needs to generate the parts part first with question part!
         module = generate_course_module()  
         module.append(self.meta.generate_xml())
+
+        questions = etree.Element('questions')
         for element in self.question_list:
-            module.append(element.generate_xml())
+            questions.append(element.generate_xml())
+        module.append(questions)
         module.append(self.author.generate_xml())
         module.append(self.school.generate_xml())
         return module

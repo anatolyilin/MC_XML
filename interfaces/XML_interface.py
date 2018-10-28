@@ -1,5 +1,5 @@
 from lxml import etree
-
+import uuid
 
 def convert_to_cdata(data):
     return etree.CDATA(str(data))
@@ -22,8 +22,8 @@ def generate_block(elements_xml, elements_content, parent_element):
 def generate_meta(name, description, privacy='10', autoModule='false',
                   exportedFrom='f496fbff-6a44-46d8-a95c-82e23a24712e'):
     module = etree.Element('module')
-    entries_meta = [name, description, privacy, autoModule, exportedFrom]
-    elements_meta = ['name', 'description', 'privacy', 'autoModule', 'exportedFrom']
+    entries_meta = [name, description, privacy, autoModule, uuid.uuid4(), exportedFrom]
+    elements_meta = ['name', 'description', 'privacy', 'autoModule', 'uid', 'exportedFrom']
     module = generate_block(elements_meta, entries_meta, module)
     return module
 
@@ -101,7 +101,6 @@ def generate_question(uid_code, question_name, comment_feedback, text, mode="Inl
     question = etree.Element('question', uid=uid_code, cmAttributed=cmAttributed, cmWeight=cmWeight,
                              modifiedBy=modifiedBy, school=school)
 
-    question = etree.Element('question')
     question = generate_block(question_elements, question_element_entries, question)
     return question
 

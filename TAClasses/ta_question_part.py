@@ -1,4 +1,4 @@
-from ta_xml import *
+from interfaces.XML_interface import *
 
 class ta_question_part:
     

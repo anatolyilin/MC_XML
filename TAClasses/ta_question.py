@@ -1,4 +1,4 @@
-from ta_xml import *
+from interfaces.XML_interface import *
 from lxml import etree
 
 class ta_question:
@@ -64,8 +64,10 @@ class ta_question:
         for part in self.parts:
             part_xml = part.generate_xml()
             xml_parts.append(part_xml)
-        return xml_parts       
+        return xml_parts
+
     def generate_xml(self):
+
         question = generate_question(self.uid, self.name,self.comment, self.text, self.mode,self.cmAttributed, self.cmWeight, self.modifiedBy, self.school ,  self.chainId , self.editing, self.numberOfAttempts, self.numberOfAttemptsLeft, self.numberOfTryAnother, self.numberOfTryAnotherLeft, self.privacy, self.modifiedIn, self.allowRepublish, self.attributeAuthor, self.difficulty,  self.width, self.weighting, self.numbering )
         question.append(self.generate_xml_parts())
         return question

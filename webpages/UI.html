@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!--Include eel.js - note this file doesn't exist in the 'web' directory -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="eel.js"></script>
+    <meta charset="UTF-8">
+    <title>Mobius Multiple Choice tools</title>
+
+</head>
+<body>
+
+<div class="col-md-12">
+    <div id="left" class='col-md-4'>
+
+        <div class="col-md-4">Module</div>
+        <div class="col-md-8"><input type='text' id='module_naam' placeholder='Module name' style="width:80%"></div>
+        <div class="col-md-12">
+<!--            <p>Export Options:</p>-->
+<!--            <div class="col-md-12">-->
+                <input type='checkbox' name='incl_assignment' value='assignment' id='assign_selector'> Generate assignment
+                <div id="assignment_name_holder">
+
+                </div>
+<!--            </div>-->
+            <p>Question List:</p>
+
+        </div>
+    </div>
+    <div id="right" class='col-md-8'>
+        <div class="col-md-12" style="border-left-style: solid;border-left-color: rgb(0,166,214);">
+            <div>Question Title:
+                <!--<input type='text' id='opgave_titel' placeholder='Question Title' style="width:500px">-->
+                <input type='text' id='opgave_titel' placeholder='Question Title'>
+            </div>
+            <div>Question text: </br>
+                <textarea rows="10" cols="80" id='opgave_text' placeholder='Question text'></textarea>
+                <!--<input type='textarea' id='opgave_text' placeholder='Question text' style="width: 80%; height: 200px">-->
+            </div>
+        </div>
+        <div class="col-md-4" style="padding-top: 5px; border-left-style: solid;border-left-color: rgb(0,166,214);">
+            Number of options:
+            <select id="selector">
+                <!--<select id="selector" style="padding-bottom: 20px">-->
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            </select>
+        </div>
+        <div class="col-md-6" style="padding-top: 5px;">
+            Shuffle: <input type='checkbox' name='shuffle_questions' value='shuffle_questoions' id='shuffle_questions'>
+            (selected = Yes) </div>
+        <div class="col-md-6" style="padding-top: 5px;">
+            Mutliple selection: <input type='checkbox' name='mulitple_correct' value='mulitple_correct' id='mulitple_correct'>
+            (selected = mutiple correct)
+        </div>
+        <div class="col-md-12" style="padding-top: 15px; border-left-style: solid;border-left-color: rgb(0,166,214);">
+            <p> Possbile answers (checkbox = correct answer()):</p>
+        </div>
+        <div id="answers" class="col-md-12" style="border-left-style: solid;border-left-color: rgb(0,166,214);"></div>
+        <div class="col-md-12" style="padding-top: 20px;border-left-style: solid;border-left-color: rgb(0,166,214);">Question feedback (Explanation of the solution): </br>
+            <textarea rows="4" cols="80" id='opgave_feedback' placeholder='[Optional]'></textarea></div>
+        <div class="col-md-12">
+
+            <input type='button' id='append_question' class='btn btn-primary' value='Append Question'></div>
+    </div>
+
+    <input type='button' id='generate_module' class='btn btn-primary' value='Generate Question Module'></div>
+    <!--<input type='button' id='btn' class='btn btn-primary' value='Append Question' style="margin-top:20px">-->
+
+</div>
+<script>
+    var json_questions = [];
+
+    // function set_question_list() {
+    //     var q_list = get_question_name_list()
+    //     class_list_el
+    //
+    // }
+
+    function get_question_name_list(){
+        var name_list = [];
+        for (var el in json_questions) {
+            name_list.push(json_questions[el].question_name)
+        }
+        return name_list
+    }
+    // getters-setters of UI fields
+    function get_question(){
+
+        name_q = get_question_name();
+        text = get_question_text();
+        answers = get_answers();
+        correct_answers = get_correct_answer();
+
+        if (name_q == '') {
+            alert('Question name/title cannot be empty');
+            return -1
+        }
+
+        if (text == '') {
+            alert('Question text field cannot be empty');
+            return -1
+        }
+
+        if (answers.length == 0) {
+            alert('At lease one answer is required');
+            return -1
+        }
+
+        counter = 0
+        for (var el in correct_answers) {
+            if (correct_answers[el]) {
+                counter++
+            }
+        }
+        if (counter < 1) {
+            alert('Atleast one correct answer is required')
+            return -1
+        }
+
+        question = {
+            'question_name': name_q,
+            'question_text': text,
+            'question_feedback': get_question_feedback(),
+            'question_answers': answers,
+            'question_correct_answer': correct_answers,
+            'shuffle': get_shuffle_option(),
+            'type': get_type()
+        };
+        return question
+    }
+
+    function clean_question(){
+        set_question_name("");
+        set_question_text("");
+        set_question_feedback("");
+        set_shuffle_option(false);
+        set_answers([]);
+        set_correct_answer([]);
+        set_type(false)
+    }
+
+    function set_question(value){
+        set_question_name(value.question_name);
+        set_question_text(value.question_text);
+        set_question_feedback(value.question_feedback);
+        set_shuffle_option(value.shuffle);
+        set_answers(value.question_answers);
+        set_correct_answer(value.question_correct_answer);
+        set_type(value.type)
+    }
+
+    function get_type(){
+        return $("#mulitple_correct").is(':checked')
+    }
+
+    function set_type(value){
+        return $("#mulitple_correct").prop('checked', value);
+    }
+
+    function get_question_name(){
+        return $("#opgave_titel").val()
+    }
+    function set_question_name(value){
+        return $("#opgave_titel").val(value)
+    }
+    function get_question_text() {
+        return $("#opgave_text").val()
+    }
+    function set_question_text(value) {
+        return $("#opgave_text").val(value)
+    }
+    function get_question_feedback(){
+        return $("#opgave_feedback").val()
+    }
+    function set_question_feedback(value){
+        return $("#opgave_feedback").val(value)
+    }
+    function get_shuffle_option(){
+        return $("#shuffle_questions").is(':checked')
+    }
+    function set_shuffle_option(value){
+        $("#shuffle_questions").prop('checked', value);
+    }
+    function set_correct_answer(answers){
+        for (i = 0; i < answers.length; i++){
+             $("#correctness_"+i).prop('checked', answers[i]);
+        }
+    }
+    function get_correct_answer(){
+        correct_answers = [];
+
+        len = $("#answers > input[type='checkbox']").length;
+
+        for (j = 0; j < len; j++) {
+            console.log(j);
+            correct_answers.push(   $("#correctness_"+j).is(':checked')   )
+        }
+
+        return correct_answers
+
+    }
+    function get_answers() {
+        answers = [];
+        len = $("#answers > input[type='text']").length;
+        for (j = 0; j < len; j++) {
+            console.log(j)
+            answers.push($("#antwoord_" + j).val())
+        }
+        return answers
+    }
+    function set_answers(answers){
+        $('#selector').val(answers.length)
+        $('#answers').empty();
+        for (i = 0; i < answers.length; i++){
+            input_item = $("<input type='checkbox' id='correctness_"+i+"'><input type='text' style='width: 96%;margin: 2px;' id='antwoord_" + i + "' placeholder='Answer" + i + "'><br>");
+            // input_item = $("<input type='text' style='width: 96%;margin: 2px;' id='antwoord_" + i + "' placeholder='Answer" + i + "'>");
+            $('#answers').append(input_item);
+            $("#antwoord_" + i).val(answers[i]);
+        }
+    }
+    function get_module_name(){
+        return $("#module_naam").val()
+    }
+    function set_module_name(value){
+        $("#module_naam").val(value)
+    }
+    function get_assignment_name(){
+        if ($("#assign_selector").is(':checked')) {
+            return $("#assignment_name").val()
+        } else {
+            return false
+        }
+    }
+    function set_assignment_name(value){
+        $("#assign_selector").prop('checked', true);
+        $("#assignment_name").val(value)
+    }
+
+
+    $("#generate_module").click(function(){
+
+        // if (json_questions[-1].question_name != get_question_name() ) {
+        //     submit_question()
+        // }
+
+        data = {
+            'module_titel': get_module_name(),
+            'assignment_titel': get_assignment_name()
+        }
+        eel.generateModule(data)
+    });
+
+
+
+    eel.expose(all_json_questions);
+    function all_json_questions(json_questions_python){
+        json_questions = json_questions_python
+        console.log(json_questions)
+    }
+
+
+    function submit_question(){
+        question = get_question()
+        console.log(question)
+        if (question != -1) {
+            eel.handleinput(question)
+        }
+    }
+
+    $("#append_question").click(function(){
+        submit_question()
+    });
+
+    // input handlers
+    $("#assign_selector").click(function(){
+                            if ($("#assign_selector").is(':checked') ) {
+                                $("#assignment_name_holder").append('<input type="text" id="assignment_name" placeholder="assignment name" style="margin-left: 5px; width: 280px;">')
+                            } else {
+                                $("#assignment_name").remove()
+                            }
+
+                    });
+    $("#selector").mouseleave(function () {
+        entries = get_answers();
+        $('#answers').empty();
+        console.log(entries);
+        // console.log($("#selector").val());
+        for (i = 0; i < $("#selector").val(); i++) {
+            input_item = $("<input type='checkbox' id='correctness_"+i+"'><input type='text' style='width: 96%;margin: 2px;' id='antwoord_" + i + "' placeholder='Answer" + i + "'><br>");
+            // input_item = $("<input type='text' style='width: 96%;margin: 2px;' id='antwoord_" + i + "' placeholder='Answer" + i + "'>");
+            $('#answers').append(input_item);
+            $("#antwoord_" + i).val(entries[i]);
+        }
+
+    });
+
+
+</script>
+</body>
+</html>

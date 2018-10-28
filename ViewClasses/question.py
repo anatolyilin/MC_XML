@@ -1,6 +1,7 @@
 from TAClasses.ta_question import *
 from interfaces.mta_interface import *
 
+
 class question:
     
     def __init__(self, name, text="", comment="", correct_ans=0):
@@ -58,7 +59,7 @@ class mc_question(question):
         return self.type
     
     def set_type(self, type):
-        self.type=types
+        self.type=type
         
     def generate_ta_question(self):
         question = ta_question_generation(self)

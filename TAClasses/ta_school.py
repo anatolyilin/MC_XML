@@ -1,4 +1,4 @@
-from ta_xml import *
+from interfaces.XML_interface import *
 
 class ta_school:
     def __init__(self, name,  school_uid="4d371c02-0aef-47ff-a091-c676055f80fc"):
